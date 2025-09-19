@@ -124,18 +124,11 @@
 
     <h2>🎨 Filters</h2>
     <div class="buttons">
-      <button onclick="applyFilter('grayscale')">Grayscale</button>
-      <button onclick="applyFilter('invert')">Invert</button>
-      <button onclick="applyFilter('sepia')">Sepia</button>
-      <button onclick="applyFilter('vintage')">Vintage</button>
-    </div>
-
-    <h2>🔄 Transform</h2>
-    <div class="buttons">
-      <button onclick="flipImage('horizontal')">Flip Horizontal</button>
-      <button onclick="flipImage('vertical')">Flip Vertical</button>
-      <button onclick="rotateImage(-90)">Rotate Left</button>
-      <button onclick="rotateImage(90)">Rotate Right</button>
+      <button onclick="setFilter('none')">Original</button>
+      <button onclick="setFilter('grayscale(100%)')">Grayscale</button>
+      <button onclick="setFilter('sepia(100%)')">Sepia</button>
+      <button onclick="setFilter('invert(100%)')">Invert</button>
+      <button onclick="setFilter('contrast(200%) brightness(150%)')">Vintage</button>
     </div>
 
     <h2>🎚 Adjustments</h2>
@@ -144,13 +137,24 @@
       <input type="range" id="brightness" min="50" max="150" value="100">
       
       <label for="contrast">Contrast</label>
-      <input type="range" id="contrast" min="50" max="150" value="100">
+      <input type="range" id="contrast" min="50" max="200" value="100">
       
       <label for="saturation">Saturation</label>
-      <input type="range" id="saturation" min="50" max="150" value="100">
-      
+      <input type="range" id="saturation" min="50" max="200" value="100">
+
+      <label for="hue">Hue Rotation</label>
+      <input type="range" id="hue" min="0" max="360" value="0">
+
       <label for="blur">Blur</label>
       <input type="range" id="blur" min="0" max="10" value="0">
+    </div>
+
+    <h2>🔄 Transform</h2>
+    <div class="buttons">
+      <button onclick="flipImage('horizontal')">Flip Horizontal</button>
+      <button onclick="flipImage('vertical')">Flip Vertical</button>
+      <button onclick="rotateImage(-90)">Rotate Left</button>
+      <button onclick="rotateImage(90)">Rotate Right</button>
     </div>
 
     <h2>💾 Actions</h2>
@@ -169,9 +173,9 @@
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     let img = new Image();
-    let originalImage = null;
     let angle = 0;
     let flipH = false, flipV = false;
+    let currentFilter = "none";
 
     upload.addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -180,8 +184,6 @@
         img.onload = () => {
           canvas.width = img.width;
           canvas.height = img.height;
-          ctx.drawImage(img, 0, 0);
-          originalImage = ctx.getImageData(0, 0, canvas.width, canvas.height);
           applyAdjustments();
         }
         img.src = event.target.result;
@@ -189,45 +191,9 @@
       reader.readAsDataURL(file);
     });
 
-    function applyFilter(type) {
-      if (!originalImage) return;
-      let imageData = new ImageData(new Uint8ClampedArray(originalImage.data), originalImage.width, originalImage.height);
-      let data = imageData.data;
-
-      for (let i = 0; i < data.length; i += 4) {
-        let r = data[i], g = data[i+1], b = data[i+2];
-
-        if (type === 'grayscale') {
-          let avg = (r + g + b) / 3;
-          data[i] = data[i+1] = data[i+2] = avg;
-        } else if (type === 'invert') {
-          data[i] = 255 - r;
-          data[i+1] = 255 - g;
-          data[i+2] = 255 - b;
-        } else if (type === 'sepia') {
-          data[i] = (0.393*r + 0.769*g + 0.189*b);
-          data[i+1] = (0.349*r + 0.686*g + 0.168*b);
-          data[i+2] = (0.272*r + 0.534*g + 0.131*b);
-        } else if (type === 'vintage') {
-          data[i] = (0.9*r + 0.5*g + 0.3*b);
-          data[i+1] = (0.8*r + 0.6*g + 0.2*b);
-          data[i+2] = (0.5*r + 0.4*g + 0.3*b);
-        }
-      }
-      ctx.putImageData(imageData, 0, 0);
+    function setFilter(filter) {
+      currentFilter = filter;
       applyAdjustments();
-    }
-
-    function resetImage() {
-      if (originalImage) {
-        ctx.putImageData(originalImage, 0, 0);
-        document.getElementById("brightness").value = 100;
-        document.getElementById("contrast").value = 100;
-        document.getElementById("saturation").value = 100;
-        document.getElementById("blur").value = 0;
-        angle = 0;
-        flipH = flipV = false;
-      }
     }
 
     function applyAdjustments() {
@@ -237,6 +203,7 @@
       const brightness = document.getElementById("brightness").value;
       const contrast = document.getElementById("contrast").value;
       const saturation = document.getElementById("saturation").value;
+      const hue = document.getElementById("hue").value;
       const blur = document.getElementById("blur").value;
 
       ctx.save();
@@ -244,9 +211,11 @@
       ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
       ctx.rotate(angle * Math.PI / 180);
       ctx.filter = `
+        ${currentFilter}
         brightness(${brightness}%)
         contrast(${contrast}%)
         saturate(${saturation}%)
+        hue-rotate(${hue}deg)
         blur(${blur}px)
       `;
       ctx.drawImage(img, -img.width/2, -img.height/2, img.width, img.height);
@@ -256,6 +225,18 @@
     document.querySelectorAll(".sliders input").forEach(slider => {
       slider.addEventListener("input", applyAdjustments);
     });
+
+    function resetImage() {
+      angle = 0;
+      flipH = flipV = false;
+      currentFilter = "none";
+      document.getElementById("brightness").value = 100;
+      document.getElementById("contrast").value = 100;
+      document.getElementById("saturation").value = 100;
+      document.getElementById("hue").value = 0;
+      document.getElementById("blur").value = 0;
+      applyAdjustments();
+    }
 
     function downloadImage() {
       const link = document.createElement("a");
