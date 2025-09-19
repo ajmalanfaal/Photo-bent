@@ -66,13 +66,13 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      background: #007bff;
-      color: #fff;
+      background: #000000;
+      color: #ffffff;
       transition: all 0.2s ease;
-      min-width: 140px;
+      min-width: 150px;
     }
     button:hover {
-      background: #0056b3;
+      background: #333333;
     }
     button:active {
       transform: scale(0.96);
@@ -111,11 +111,21 @@
     <canvas id="canvas"></canvas>
 
     <div class="buttons">
+      <!-- Filters -->
       <button onclick="applyFilter('grayscale')">Grayscale</button>
       <button onclick="applyFilter('invert')">Invert</button>
       <button onclick="applyFilter('sepia')">Sepia</button>
       <button onclick="applyFilter('vintage')">Vintage</button>
+      
+      <!-- Adjustments -->
       <button onclick="resetImage()">Reset</button>
+      <button onclick="downloadImage()">Download</button>
+
+      <!-- Transformations -->
+      <button onclick="flipImage('horizontal')">Flip Horizontal</button>
+      <button onclick="flipImage('vertical')">Flip Vertical</button>
+      <button onclick="rotateImage(-90)">Rotate Left</button>
+      <button onclick="rotateImage(90)">Rotate Right</button>
     </div>
 
     <div class="sliders">
@@ -143,6 +153,8 @@
     const ctx = canvas.getContext('2d');
     let img = new Image();
     let originalImage = null;
+    let angle = 0;
+    let flipH = false, flipV = false;
 
     upload.addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -196,30 +208,55 @@
         document.getElementById("contrast").value = 100;
         document.getElementById("saturation").value = 100;
         document.getElementById("blur").value = 0;
+        angle = 0;
+        flipH = flipV = false;
       }
     }
 
     function applyAdjustments() {
       if (!img.src) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
+
       const brightness = document.getElementById("brightness").value;
       const contrast = document.getElementById("contrast").value;
       const saturation = document.getElementById("saturation").value;
       const blur = document.getElementById("blur").value;
 
+      ctx.save();
+      ctx.translate(canvas.width/2, canvas.height/2);
+      ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+      ctx.rotate(angle * Math.PI / 180);
       ctx.filter = `
         brightness(${brightness}%)
         contrast(${contrast}%)
         saturate(${saturation}%)
         blur(${blur}px)
       `;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, -img.width/2, -img.height/2, img.width, img.height);
+      ctx.restore();
     }
 
     document.querySelectorAll(".sliders input").forEach(slider => {
       slider.addEventListener("input", applyAdjustments);
     });
+
+    function downloadImage() {
+      const link = document.createElement("a");
+      link.download = "edited-photo.png";
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+
+    function flipImage(direction) {
+      if (direction === "horizontal") flipH = !flipH;
+      if (direction === "vertical") flipV = !flipV;
+      applyAdjustments();
+    }
+
+    function rotateImage(deg) {
+      angle += deg;
+      applyAdjustments();
+    }
   </script>
 </body>
 </html>
