@@ -4,24 +4,77 @@
   <meta charset="UTF-8">
   <title>Photo Editor</title>
   <style>
-    body { text-align: center; font-family: Arial; background: #f4f4f4; }
-    canvas { max-width: 90%; margin-top: 20px; }
-    button { margin: 5px; padding: 10px; }
+    body {
+      text-align: center;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      margin: 0;
+      padding: 0;
+      color: #fff;
+    }
+    header {
+      padding: 20px;
+      font-size: 28px;
+      font-weight: bold;
+    }
+    .container {
+      padding: 20px;
+    }
+    input[type="file"] {
+      margin: 15px 0;
+      padding: 12px;
+      font-size: 16px;
+      background: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    canvas {
+      max-width: 95%;
+      border-radius: 12px;
+      margin-top: 20px;
+      box-shadow: 0px 4px 20px rgba(0,0,0,0.3);
+    }
+    .buttons {
+      margin-top: 20px;
+    }
+    button {
+      margin: 8px;
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #fff;
+      color: #333;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #333;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
-  <h1>Simple Photo Editor</h1>
-  <input type="file" id="upload" accept="image/*"><br>
-  <canvas id="canvas"></canvas><br>
-  <button onclick="applyFilter('grayscale')">Grayscale</button>
-  <button onclick="applyFilter('invert')">Invert</button>
-  <button onclick="applyFilter('sepia')">Sepia</button>
+  <header>📸 Simple Photo Editor</header>
+  <div class="container">
+    <input type="file" id="upload" accept="image/*"><br>
+    <canvas id="canvas"></canvas><br>
+    <div class="buttons">
+      <button onclick="applyFilter('grayscale')">Grayscale</button>
+      <button onclick="applyFilter('invert')">Invert</button>
+      <button onclick="applyFilter('sepia')">Sepia</button>
+      <button onclick="resetImage()">Reset</button>
+    </div>
+  </div>
 
   <script>
     const upload = document.getElementById('upload');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     let img = new Image();
+    let originalImage = null;
 
     upload.addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -31,6 +84,7 @@
           canvas.width = img.width;
           canvas.height = img.height;
           ctx.drawImage(img, 0, 0);
+          originalImage = ctx.getImageData(0, 0, canvas.width, canvas.height);
         }
         img.src = event.target.result;
       }
@@ -38,8 +92,9 @@
     });
 
     function applyFilter(type) {
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imageData.data;
+      if (!originalImage) return;
+      let imageData = new ImageData(new Uint8ClampedArray(originalImage.data), originalImage.width, originalImage.height);
+      let data = imageData.data;
 
       for (let i = 0; i < data.length; i += 4) {
         let r = data[i], g = data[i+1], b = data[i+2];
@@ -57,8 +112,13 @@
           data[i+2] = (0.272*r + 0.534*g + 0.131*b);
         }
       }
-
       ctx.putImageData(imageData, 0, 0);
+    }
+
+    function resetImage() {
+      if (originalImage) {
+        ctx.putImageData(originalImage, 0, 0);
+      }
     }
   </script>
 </body>
