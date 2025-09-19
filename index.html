@@ -1,152 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>Photo Editor — ajmalanfaal</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <style>
-    body {
-      margin:0;
-      font-family:sans-serif;
-      background:#f7f7f7;
-    }
-    header {
-      text-align:center;
-      padding:16px;
-      font-size:22px;
-      font-weight:bold;
-      background:#fff;
-      box-shadow:0 2px 6px rgba(0,0,0,0.05);
-    }
-    .editor {
-      display:flex;
-      flex-wrap:wrap;
-      gap:16px;
-      max-width:1000px;
-      margin:20px auto;
-      padding:10px;
-    }
-    .canvas-wrap {
-      flex:1 1 55%;
-      background:#fff;
-      border-radius:10px;
-      padding:10px;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      box-shadow:0 4px 10px rgba(0,0,0,0.05);
-    }
-    canvas {
-      max-width:100%;
-      height:auto;
-      border-radius:8px;
-    }
-    .controls {
-      flex:1 1 40%;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
-    .panel {
-      background:#fff;
-      border-radius:10px;
-      padding:10px;
-      box-shadow:0 2px 8px rgba(0,0,0,0.05);
-    }
-    .panel h3 {
-      margin:0;
-      font-size:16px;
-      cursor:pointer;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-    .panel-content {
-      display:none;
-      margin-top:10px;
-    }
-    .panel.active .panel-content {
-      display:block;
-    }
-    button {
-      width:100%;
-      padding:12px;
-      font-size:16px;
-      border:none;
-      border-radius:8px;
-      background:black;
-      color:white;
-      margin-top:6px;
-    }
-    .sticky-actions {
-      position:sticky;
-      bottom:0;
-      background:#fff;
-      padding:8px;
-      box-shadow:0 -2px 8px rgba(0,0,0,0.1);
-      border-radius:10px;
-    }
-    @media(max-width:768px){
-      .editor {flex-direction:column;}
-      .canvas-wrap {order:1;}
-      .controls {order:2;}
-    }
-  </style>
-</head>
 <body>
-  <header>📸 Photo Editor — Made by ajmalanfaal</header>
-  <div class="editor">
-    <div class="canvas-wrap">
-      <canvas id="canvas"></canvas>
+  <div class="container">
+    <h1>📸 Photo Editor — Made by ajmalanfaaL</h1>
+
+    <!-- Upload Button -->
+    <div class="upload-section">
+      <label for="upload" class="upload-btn">Upload Image</label>
+      <input type="file" id="upload" accept="image/*" hidden>
     </div>
+
+    <!-- Canvas -->
+    <canvas id="canvas"></canvas>
+
+    <!-- Accordion Sections -->
+    <div class="accordion">
+      <div class="accordion-item">
+        <button class="accordion-header">🎨 Filters</button>
+        <div class="accordion-body" id="filters"></div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-header">📏 Adjustments</button>
+        <div class="accordion-body" id="adjustments"></div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-header">🔄 Transform</button>
+        <div class="accordion-body" id="transform"></div>
+      </div>
+    </div>
+
+    <!-- Control Buttons -->
     <div class="controls">
-      <div class="panel">
-        <h3 onclick="togglePanel(this)">🎨 Filters <span>+</span></h3>
-        <div class="panel-content">
-          <button onclick="setPreset('none')">Original</button>
-          <button onclick="setPreset('grayscale(100%)')">Grayscale</button>
-          <button onclick="setPreset('sepia(100%)')">Sepia</button>
-          <button onclick="setPreset('invert(100%)')">Invert</button>
-          <button onclick="setPreset('contrast(150%) brightness(105%) saturate(120%)')">Vintage</button>
-          <button onclick="setPreset('contrast(120%) saturate(130%)')">Punch</button>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h3 onclick="togglePanel(this)">🎚 Adjustments <span>+</span></h3>
-        <div class="panel-content">
-          <label>Brightness <input id="brightness" type="range" min="50" max="150" value="100"></label>
-          <label>Contrast <input id="contrast" type="range" min="50" max="200" value="100"></label>
-          <label>Saturation <input id="saturation" type="range" min="0" max="300" value="100"></label>
-          <label>Hue <input id="hue" type="range" min="0" max="360" value="0"></label>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h3 onclick="togglePanel(this)">🔄 Transform <span>+</span></h3>
-        <div class="panel-content">
-          <button onclick="flip('horizontal')">Flip H</button>
-          <button onclick="flip('vertical')">Flip V</button>
-          <button onclick="rotate(-90)">Rotate Left</button>
-          <button onclick="rotate(90)">Rotate Right</button>
-        </div>
-      </div>
-
-      <div class="sticky-actions">
-        <button onclick="resetAll()">Reset</button>
-        <button onclick="downloadImage()">Download</button>
-      </div>
+      <button id="reset">Reset</button>
+      <button id="download">Download</button>
     </div>
   </div>
-
-  <script>
-    function togglePanel(el){
-      const panel = el.parentElement;
-      panel.classList.toggle("active");
-      const span = el.querySelector("span");
-      span.textContent = panel.classList.contains("active") ? "-" : "+";
-    }
-    // ⚡ keep your existing JS code for image loading, drawing, filters here
-  </script>
 </body>
-</html>
