@@ -77,6 +77,20 @@
     button:active {
       transform: scale(0.96);
     }
+    .sliders {
+      margin-top: 30px;
+      width: 100%;
+      max-width: 500px;
+    }
+    .sliders label {
+      font-size: 18px;
+      font-weight: 500;
+      display: block;
+      margin: 15px 0 5px;
+    }
+    .sliders input[type="range"] {
+      width: 100%;
+    }
     footer {
       text-align: center;
       font-size: 18px;
@@ -100,7 +114,22 @@
       <button onclick="applyFilter('grayscale')">Grayscale</button>
       <button onclick="applyFilter('invert')">Invert</button>
       <button onclick="applyFilter('sepia')">Sepia</button>
+      <button onclick="applyFilter('vintage')">Vintage</button>
       <button onclick="resetImage()">Reset</button>
+    </div>
+
+    <div class="sliders">
+      <label for="brightness">Brightness</label>
+      <input type="range" id="brightness" min="50" max="150" value="100">
+      
+      <label for="contrast">Contrast</label>
+      <input type="range" id="contrast" min="50" max="150" value="100">
+      
+      <label for="saturation">Saturation</label>
+      <input type="range" id="saturation" min="50" max="150" value="100">
+      
+      <label for="blur">Blur</label>
+      <input type="range" id="blur" min="0" max="10" value="0">
     </div>
   </div>
 
@@ -124,6 +153,7 @@
           canvas.height = img.height;
           ctx.drawImage(img, 0, 0);
           originalImage = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          applyAdjustments();
         }
         img.src = event.target.result;
       }
@@ -149,16 +179,47 @@
           data[i] = (0.393*r + 0.769*g + 0.189*b);
           data[i+1] = (0.349*r + 0.686*g + 0.168*b);
           data[i+2] = (0.272*r + 0.534*g + 0.131*b);
+        } else if (type === 'vintage') {
+          data[i] = (0.9*r + 0.5*g + 0.3*b);
+          data[i+1] = (0.8*r + 0.6*g + 0.2*b);
+          data[i+2] = (0.5*r + 0.4*g + 0.3*b);
         }
       }
       ctx.putImageData(imageData, 0, 0);
+      applyAdjustments();
     }
 
     function resetImage() {
       if (originalImage) {
         ctx.putImageData(originalImage, 0, 0);
+        document.getElementById("brightness").value = 100;
+        document.getElementById("contrast").value = 100;
+        document.getElementById("saturation").value = 100;
+        document.getElementById("blur").value = 0;
       }
     }
+
+    function applyAdjustments() {
+      if (!img.src) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const brightness = document.getElementById("brightness").value;
+      const contrast = document.getElementById("contrast").value;
+      const saturation = document.getElementById("saturation").value;
+      const blur = document.getElementById("blur").value;
+
+      ctx.filter = `
+        brightness(${brightness}%)
+        contrast(${contrast}%)
+        saturate(${saturation}%)
+        blur(${blur}px)
+      `;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    }
+
+    document.querySelectorAll(".sliders input").forEach(slider => {
+      slider.addEventListener("input", applyAdjustments);
+    });
   </script>
 </body>
 </html>
