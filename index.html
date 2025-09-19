@@ -48,20 +48,29 @@
     }
     canvas {
       max-width: 100%;
-      margin-top: 30px;
+      margin: 30px 0;
       border-radius: 12px;
       box-shadow: 0px 4px 16px rgba(0,0,0,0.1);
     }
+    h2 {
+      margin-top: 25px;
+      margin-bottom: 15px;
+      font-size: 24px;
+      font-weight: 600;
+      text-align: center;
+      color: #111;
+    }
     .buttons {
-      margin-top: 35px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 18px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto 30px;
     }
     button {
-      padding: 18px 28px;
-      font-size: 20px;
+      padding: 16px 24px;
+      font-size: 18px;
       font-weight: 600;
       border: none;
       border-radius: 10px;
@@ -69,7 +78,6 @@
       background: #000000;
       color: #ffffff;
       transition: all 0.2s ease;
-      min-width: 150px;
     }
     button:hover {
       background: #333333;
@@ -78,7 +86,11 @@
       transform: scale(0.96);
     }
     .sliders {
-      margin-top: 30px;
+      margin-top: 10px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #fafafa;
       width: 100%;
       max-width: 500px;
     }
@@ -110,24 +122,23 @@
 
     <canvas id="canvas"></canvas>
 
+    <h2>🎨 Filters</h2>
     <div class="buttons">
-      <!-- Filters -->
       <button onclick="applyFilter('grayscale')">Grayscale</button>
       <button onclick="applyFilter('invert')">Invert</button>
       <button onclick="applyFilter('sepia')">Sepia</button>
       <button onclick="applyFilter('vintage')">Vintage</button>
-      
-      <!-- Adjustments -->
-      <button onclick="resetImage()">Reset</button>
-      <button onclick="downloadImage()">Download</button>
+    </div>
 
-      <!-- Transformations -->
+    <h2>🔄 Transform</h2>
+    <div class="buttons">
       <button onclick="flipImage('horizontal')">Flip Horizontal</button>
       <button onclick="flipImage('vertical')">Flip Vertical</button>
       <button onclick="rotateImage(-90)">Rotate Left</button>
       <button onclick="rotateImage(90)">Rotate Right</button>
     </div>
 
+    <h2>🎚 Adjustments</h2>
     <div class="sliders">
       <label for="brightness">Brightness</label>
       <input type="range" id="brightness" min="50" max="150" value="100">
@@ -140,6 +151,12 @@
       
       <label for="blur">Blur</label>
       <input type="range" id="blur" min="0" max="10" value="0">
+    </div>
+
+    <h2>💾 Actions</h2>
+    <div class="buttons">
+      <button onclick="resetImage()">Reset</button>
+      <button onclick="downloadImage()">Download</button>
     </div>
   </div>
 
