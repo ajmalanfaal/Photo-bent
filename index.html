@@ -1,3 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📸 Photo Editor — Made by ajmalanfaaL</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 22px;
+      margin-bottom: 15px;
+    }
+    canvas {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .upload-section {
+      margin-bottom: 15px;
+    }
+    .upload-btn {
+      background: black;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+      display: inline-block;
+      transition: 0.3s;
+    }
+    .upload-btn:hover {
+      background: #333;
+    }
+    .accordion {
+      text-align: left;
+    }
+    .accordion-item {
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .accordion-header {
+      width: 100%;
+      background: #f1f1f1;
+      border: none;
+      text-align: left;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .accordion-body {
+      display: none;
+      padding: 15px;
+      background: white;
+    }
+    .controls button {
+      background: black;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      margin: 10px 5px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .controls button:hover {
+      background: #333;
+    }
+    .filter-btn {
+      background: black;
+      color: white;
+      border: none;
+      padding: 10px;
+      margin: 5px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .filter-btn:hover {
+      background: #333;
+    }
+    input[type="range"] {
+      width: 100%;
+      margin: 8px 0;
+    }
+  </style>
+</head>
 <body>
   <div class="container">
     <h1>📸 Photo Editor — Made by ajmalanfaaL</h1>
@@ -15,17 +117,35 @@
     <div class="accordion">
       <div class="accordion-item">
         <button class="accordion-header">🎨 Filters</button>
-        <div class="accordion-body" id="filters"></div>
+        <div class="accordion-body" id="filters">
+          <button class="filter-btn" data-filter="none">Original</button>
+          <button class="filter-btn" data-filter="grayscale(100%)">Grayscale</button>
+          <button class="filter-btn" data-filter="sepia(100%)">Sepia</button>
+          <button class="filter-btn" data-filter="invert(100%)">Invert</button>
+          <button class="filter-btn" data-filter="contrast(150%)">Punch</button>
+          <button class="filter-btn" data-filter="brightness(120%) saturate(120%)">Vintage</button>
+        </div>
       </div>
 
       <div class="accordion-item">
         <button class="accordion-header">📏 Adjustments</button>
-        <div class="accordion-body" id="adjustments"></div>
+        <div class="accordion-body" id="adjustments">
+          <label>Brightness</label>
+          <input type="range" id="brightness" min="50" max="150" value="100">
+          <label>Contrast</label>
+          <input type="range" id="contrast" min="50" max="150" value="100">
+          <label>Saturation</label>
+          <input type="range" id="saturation" min="50" max="150" value="100">
+        </div>
       </div>
 
       <div class="accordion-item">
         <button class="accordion-header">🔄 Transform</button>
-        <div class="accordion-body" id="transform"></div>
+        <div class="accordion-body" id="transform">
+          <button class="filter-btn" id="flipH">Flip Horizontal</button>
+          <button class="filter-btn" id="flipV">Flip Vertical</button>
+          <button class="filter-btn" id="rotate">Rotate</button>
+        </div>
       </div>
     </div>
 
@@ -35,4 +155,96 @@
       <button id="download">Download</button>
     </div>
   </div>
+
+  <script>
+    const upload = document.getElementById("upload");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let img = new Image();
+    let currentFilter = "none";
+    let brightness = 100, contrast = 100, saturation = 100;
+    let flipH = 1, flipV = 1, rotation = 0;
+
+    upload.addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        img.onload = () => {
+          canvas.width = img.width > 500 ? 500 : img.width;
+          canvas.height = img.height * (canvas.width / img.width);
+          drawImage();
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function drawImage() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.scale(flipH, flipV);
+      ctx.rotate(rotation * Math.PI / 180);
+      ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) ${currentFilter}`;
+      ctx.drawImage(img, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
+      ctx.restore();
+    }
+
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentFilter = btn.dataset.filter || "none";
+        drawImage();
+      });
+    });
+
+    document.getElementById("brightness").addEventListener("input", e => {
+      brightness = e.target.value;
+      drawImage();
+    });
+    document.getElementById("contrast").addEventListener("input", e => {
+      contrast = e.target.value;
+      drawImage();
+    });
+    document.getElementById("saturation").addEventListener("input", e => {
+      saturation = e.target.value;
+      drawImage();
+    });
+
+    document.getElementById("flipH").addEventListener("click", () => {
+      flipH *= -1;
+      drawImage();
+    });
+    document.getElementById("flipV").addEventListener("click", () => {
+      flipV *= -1;
+      drawImage();
+    });
+    document.getElementById("rotate").addEventListener("click", () => {
+      rotation += 90;
+      drawImage();
+    });
+
+    document.getElementById("reset").addEventListener("click", () => {
+      currentFilter = "none";
+      brightness = contrast = saturation = 100;
+      flipH = flipV = 1;
+      rotation = 0;
+      drawImage();
+    });
+
+    document.getElementById("download").addEventListener("click", () => {
+      const link = document.createElement("a");
+      link.download = "edited-image.png";
+      link.href = canvas.toDataURL();
+      link.click();
+    });
+
+    document.querySelectorAll(".accordion-header").forEach(header => {
+      header.addEventListener("click", () => {
+        const body = header.nextElementSibling;
+        body.style.display = body.style.display === "block" ? "none" : "block";
+      });
+    });
+  </script>
 </body>
+</html>
